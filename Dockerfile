@@ -55,13 +55,13 @@ RUN sudo usermod -aG audio developer
 
 # Build the SuperCollider Extra UGens
 RUN cd /usr/src && git clone git://github.com/supercollider/sc3-plugins.git && \
-    cd sc3-plugins && git submodule init && git submodule update && \
+    cd sc3-plugins && git checkout Version-3.9.1 && git submodule init && git submodule update && \
     mkdir build && cd build && \
     cmake -DSC_PATH=/usr/include/SuperCollider -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .. && \
     make && make install && ldconfig
 
 # app is a significant folder for the Ruby baseimage
-RUN cd /usr/src && git clone https://github.com/samaaron/sonic-pi.git app
+RUN cd /usr/src && git clone https://github.com/samaaron/sonic-pi.git app && cd app && git checkout v3.1.0
 RUN chown -R developer /usr/src/app
 
 USER developer
@@ -83,8 +83,8 @@ RUN sed -i -e 's/^ DEPENDPATH.*/ DEPENDPATH += -L\/usr\/lib/' /usr/src/app/app/g
 # RUN sed -i -e 's/localhost/127.0.0.1/' /usr/src/app/app/server/core.rb
 # RUN sed -i -e 's/localhost/127.0.0.1/' /usr/src/app/app/server/bin/sonic-pi-server.rb
 
-RUN ./app/server/bin/compile-extensions.rb
-RUN ./app/gui/qt/rp-build-app
+RUN /usr/src/app/app/server/ruby/bin/compile-extensions.rb
+RUN /usr/src/app/app/gui/qt/rp-build-app
 
 RUN echo "/usr/bin/jackd -m -dalsa -r44100 -p4096 -n3 -s -D -Chw:I82801AAICH -Phw:I82801AAICH" > ~/.jackdrc && chmod 755 ~/.jackdrc
 
